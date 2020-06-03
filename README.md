@@ -1,2 +1,2 @@
-# generate-validate-license
-Proof of concept for an offline license check
+# General
+Inspired by this [article](https://build-system.fman.io/generating-license-keys) I implement a proof for an offline license check.
