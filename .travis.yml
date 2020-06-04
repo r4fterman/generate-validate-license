@@ -17,7 +17,7 @@ before_install:
 install: /bin/true
 
 script:
-  - mvn clean install
+  - mvn clean install -Pci
 
 after_script:
   - JACOCO_SOURCE_PATH=./core-commons/src/main/java ./cc-test-reporter format-coverage ./generate-license/target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.generate-license.json
