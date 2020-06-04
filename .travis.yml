@@ -20,7 +20,5 @@ script:
   - mvn clean install -Pci
 
 after_script:
-  - JACOCO_SOURCE_PATH=./core-commons/src/main/java ./cc-test-reporter format-coverage ./generate-license/target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.generate-license.json
-  - JACOCO_SOURCE_PATH=./core-parsers/src/main/java ./cc-test-reporter format-coverage ./validate-license/target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.validate-license.json
   - ./cc-test-reporter sum-coverage ./target/coverage/codeclimate.*.json -p 5 -o ./target/coverage/codeclimate.json
   - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i ./target/coverage/codeclimate.json; fi

@@ -8,8 +8,8 @@ import org.apache.commons.io.IOUtils;
 
 public class PublicKeyFileReader {
 
-    private static final String PRIVATE_KEY_END_KEY = "-----END PRIVATE KEY-----";
-    private static final String PRIVATE_KEY_START_KEY = "-----BEGIN PRIVATE KEY-----";
+    private static final String PRIVATE_KEY_END_KEY = "-----END PUBLIC KEY-----";
+    private static final String PRIVATE_KEY_START_KEY = "-----BEGIN PUBLIC KEY-----";
 
     public String getPublicKeyContent(final InputStream inputStream) throws IOException {
         final String content = IOUtils.toString(inputStream, StandardCharsets.UTF_8);

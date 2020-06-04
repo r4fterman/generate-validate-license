@@ -1,11 +1,13 @@
 package org.r4fter.licensing;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.r4fter.licensing.generation.CannotGenerateLicenseException;
@@ -13,7 +15,7 @@ import org.r4fter.licensing.generation.LicenseGenerator;
 import org.r4fter.licensing.validation.CannotValidateLicenseException;
 import org.r4fter.licensing.validation.LicenseValidator;
 
-public class LicenseValidationApplication {
+public class LicenseCheckApplication {
 
     private static final String OPTION_SIGN = "pk";
     private static final String OPTION_VERIFY = "v";
@@ -26,16 +28,18 @@ public class LicenseValidationApplication {
             final CommandLine commandLine = parseArguments(args);
 
             if (commandLine.hasOption(OPTION_SIGN) || commandLine.hasOption(OPTION_VERIFY)) {
-                final LicenseValidationApplication application = new LicenseValidationApplication();
+                final LicenseCheckApplication application = new LicenseCheckApplication();
 
-                final String userName = "user@email.com";
+                final String userName = getMandatoryOption(commandLine, OPTION_USER_NAME);
 
                 if (commandLine.hasOption(OPTION_SIGN)) {
-                    final String privateKeyFile = commandLine.getOptionValue(OPTION_SIGN);
-                    application.signLicense(userName, getPrivateKey(privateKeyFile));
+                    final String privateKey = getPrivateKey(getMandatoryOption(commandLine, OPTION_SIGN));
+
+                    application.signLicense(userName, privateKey);
                 } else {
-                    final String publicKeyFile = commandLine.getOptionValue(OPTION_VERIFY);
-                    final String signature = commandLine.getOptionValue(OPTION_SIGNATURE);
+                    final String publicKeyFile = getMandatoryOption(commandLine, OPTION_VERIFY);
+                    final String signature = getMandatoryOption(commandLine, OPTION_SIGNATURE);
+
                     application.verifyLicense(userName, getPublicKey(publicKeyFile), signature);
                 }
             } else {
@@ -44,23 +48,39 @@ public class LicenseValidationApplication {
                 final int exitCode = commandLine.hasOption(OPTION_HELP) ? 0 : 1;
                 System.exit(exitCode);
             }
-        } catch (ParseException | CannotValidateLicenseException | CannotGenerateLicenseException e) {
+        } catch (ParseException | CannotValidateLicenseException | CannotGenerateLicenseException | IOException | MissingMandatoryOptionValue e) {
             e.printStackTrace();
             System.exit(-1);
         }
     }
 
-    private static String getPrivateKey(String privateKeyFile) {
-        return null;
+    private static String getPrivateKey(final String privateKeyFile) throws IOException {
+        final PrivateKeyFileReader reader = new PrivateKeyFileReader();
+        try (FileInputStream inputStream = new FileInputStream(new File(privateKeyFile))) {
+            return reader.getPrivateKeyContent(inputStream);
+        }
     }
 
-    private static String getPublicKey(String publicKeyFile) {
-        return null;
+    private static String getPublicKey(final String publicKeyFile) throws IOException {
+        final PublicKeyFileReader reader = new PublicKeyFileReader();
+        try (FileInputStream inputStream = new FileInputStream(new File(publicKeyFile))) {
+            return reader.getPublicKeyContent(inputStream);
+        }
     }
 
-    private static CommandLine parseArguments(String[] args) throws ParseException {
+    private static CommandLine parseArguments(final String[] args) throws ParseException {
         final CommandLineParser parser = new DefaultParser();
         return parser.parse(getOptions(), args);
+    }
+
+    private static String getMandatoryOption(CommandLine commandLine, String option) throws MissingMandatoryOptionValue {
+        if (commandLine.hasOption(option)) {
+            final String value = commandLine.getOptionValue(option);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        throw new MissingMandatoryOptionValue(option);
     }
 
     private static Options getOptions() {
@@ -76,8 +96,14 @@ public class LicenseValidationApplication {
     }
 
     private static void showHelp() {
+        final String header = "Use the following options to sign a text or validate a signature against a text.";
+        final String footer = "\n"
+                + "Examples\n"
+                + "For signing: license-check -pk <private key file path> -u <user name>\n"
+                + "For verifying: license-check -v <public key file path> -u <user name> -s <signature>";
+
         final HelpFormatter formatter = new HelpFormatter();
-        formatter.printHelp("license application", getOptions());
+        formatter.printHelp("license-check", header, getOptions(), footer, true);
     }
 
     private void signLicense(final String userName, final String privateKey) throws CannotGenerateLicenseException {
@@ -92,7 +118,7 @@ public class LicenseValidationApplication {
         final LicenseValidator licenseValidator = new LicenseValidator();
         final boolean valid = licenseValidator.validate(userName, signature, publicKey);
 
-        final String message = String.format("Validation result:\n%s", userName + "\n" + valid);
+        final String message = String.format("Validation result: %s\n%s", userName, valid);
         System.out.println(message);
     }
 
