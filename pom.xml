@@ -94,4 +94,48 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>ci</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.5</version>
+                        <configuration>
+                            <destFile>${jacoco.execution.file}</destFile>
+                            <dataFile>${jacoco.execution.file}</dataFile>
+                            <outputDirectory>${project.build.directory}/coverage-reports</outputDirectory>
+                            <propertyName>surefireArgLine</propertyName>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>pre-unit-test</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>post-unit-test</id>
+                                <phase>test</phase>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-surefire-plugin</artifactId>
+                        <version>2.22.1</version>
+                        <configuration>
+                            <argLine>${surefireArgLine}</argLine>
+                            <runOrder>alphabetical</runOrder>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>
