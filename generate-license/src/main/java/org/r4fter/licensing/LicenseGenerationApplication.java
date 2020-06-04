@@ -7,10 +7,11 @@ public class LicenseGenerationApplication {
 
     public static void main(final String[] args) {
         final String userName = "user@email.com";
+        final String privateKeyOneLine = args[0];
 
         try {
             final LicenseGenerator licenseGenerator = new LicenseGenerator();
-            final String licenseSignature = licenseGenerator.provide(userName);
+            final String licenseSignature = licenseGenerator.provide(userName, privateKeyOneLine);
 
             print(userName + "\n" + licenseSignature);
         } catch (CannotGenerateLicenseException e) {

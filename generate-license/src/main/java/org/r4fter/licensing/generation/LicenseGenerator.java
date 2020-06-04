@@ -1,7 +1,5 @@
 package org.r4fter.licensing.generation;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -12,12 +10,7 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Base64;
 
-import org.apache.commons.io.IOUtils;
-
 public class LicenseGenerator {
-
-    private static final String PRIVATE_KEY_END_KEY = "-----END PRIVATE KEY-----";
-    private static final String PRIVATE_KEY_START_KEY = "-----BEGIN PRIVATE KEY-----";
 
     private static final String KEY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
@@ -35,11 +28,10 @@ public class LicenseGenerator {
         }
     }
 
-    public String provide(final String userName) throws CannotGenerateLicenseException {
-        final String privateKey = getPrivateKeyContent();
-        final String privateKeyOneLine = stripKey(privateKey);
+    public String provide(final String userName, final String privateKeyOneLine) throws CannotGenerateLicenseException {
+        final String licenseInformation = userName + additionalLicenseInformation;
 
-        return signInputBySHA256WithRSA(userName + additionalLicenseInformation, privateKeyOneLine);
+        return signInputBySHA256WithRSA(licenseInformation, privateKeyOneLine);
     }
 
     private String signInputBySHA256WithRSA(final String input, final String privateKey) throws CannotGenerateLicenseException {
@@ -55,23 +47,6 @@ public class LicenseGenerator {
             return Base64.getEncoder().encodeToString(signedInput);
         } catch (NoSuchAlgorithmException | SignatureException | InvalidKeyException | InvalidKeySpecException e) {
             throw new CannotGenerateLicenseException("Cannot sign the input data.", e);
-        }
-
-    }
-
-    private String stripKey(final String privateKey) {
-        return privateKey
-                .replaceAll("\n", "")
-                .replaceAll(PRIVATE_KEY_START_KEY, "")
-                .replaceAll(PRIVATE_KEY_END_KEY, "")
-                ;
-    }
-
-    private String getPrivateKeyContent() throws CannotGenerateLicenseException {
-        try (InputStream resourceAsStream = LicenseGenerator.class.getResourceAsStream("/privateKey_pcks8.pem")) {
-            return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new CannotGenerateLicenseException("Private key in PCKS8 format not found!", e);
         }
     }
 

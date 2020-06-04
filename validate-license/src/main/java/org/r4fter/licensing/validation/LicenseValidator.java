@@ -1,7 +1,5 @@
 package org.r4fter.licensing.validation;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -13,14 +11,10 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Base64;
 
-import org.apache.commons.io.IOUtils;
-
 public class LicenseValidator {
 
     private static final String KEY_ALGORITHM = "RSA";
     private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
-    private static final String PUBLIC_KEY_START_KEY = "-----BEGIN PUBLIC KEY-----";
-    private static final String PUBLIC_KEY_END_KEY = "-----END PUBLIC KEY-----";
 
     private final String additionalLicenseInformation = "Any information that should go into the signed license part.";
     private final KeyFactory keyFactory;
@@ -34,50 +28,33 @@ public class LicenseValidator {
         }
     }
 
-    public boolean validate(final String userName, final String signedLicense) throws CannotValidateLicenseException {
-        final PublicKey publicKey = getPublicKey();
+    public boolean validate(final String userName, final String signedLicense, final String publicKey) throws CannotValidateLicenseException {
+        final String licenseInformation = userName + additionalLicenseInformation;
 
-        return verify(userName + additionalLicenseInformation, publicKey, signedLicense);
+        return verify(licenseInformation, publicKey, signedLicense);
     }
 
-    private boolean verify(final String data, final PublicKey publicKey, final String sign) throws CannotValidateLicenseException {
+    private boolean verify(final String licenseInformation, final String publicKey, final String signatureToVerify) throws CannotValidateLicenseException {
         try {
             final Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
-            signature.initVerify(publicKey);
-            signature.update(data.getBytes(StandardCharsets.UTF_8));
+            signature.initVerify(convertToPublicKey(publicKey));
+            signature.update(licenseInformation.getBytes(StandardCharsets.UTF_8));
 
-            return signature.verify(Base64.getDecoder().decode(sign));
+            return signature.verify(Base64.getDecoder().decode(signatureToVerify));
         } catch (NoSuchAlgorithmException | InvalidKeyException | SignatureException e) {
             throw new CannotValidateLicenseException("Cannot validate the input data.", e);
         }
-
     }
 
-    private PublicKey getPublicKey() throws CannotValidateLicenseException {
+    private PublicKey convertToPublicKey(final String publicKey) throws CannotValidateLicenseException {
         try {
-            final String publicKeyContent = getPublicKeyContent();
-            final String publicKeyOneLine = stripKey(publicKeyContent);
-
-            final byte[] keyBytes = Base64.getDecoder().decode(publicKeyOneLine.getBytes());
+            final byte[] keyBytes = Base64.getDecoder().decode(publicKey.getBytes());
             final X509EncodedKeySpec x509EncodedKeySpec = new X509EncodedKeySpec(keyBytes);
 
             return keyFactory.generatePublic(x509EncodedKeySpec);
-        } catch (InvalidKeySpecException |IOException e) {
+        } catch (InvalidKeySpecException e) {
             throw new CannotValidateLicenseException("Cannot read public key.", e);
         }
-
     }
 
-    private String stripKey(String publicKey) {
-        return publicKey
-                .replaceAll("\n", "")
-                .replaceAll(PUBLIC_KEY_START_KEY, "")
-                .replaceAll(PUBLIC_KEY_END_KEY, "")
-                ;
-    }
-
-    private String getPublicKeyContent() throws IOException {
-        final InputStream stream = LicenseValidator.class.getResourceAsStream("/public.pem");
-        return IOUtils.toString(stream, StandardCharsets.UTF_8);
-    }
 }
