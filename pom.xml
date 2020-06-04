@@ -11,6 +11,7 @@
 
     <modules>
         <module>generate-license</module>
+        <module>validate-license</module>
     </modules>
 
 

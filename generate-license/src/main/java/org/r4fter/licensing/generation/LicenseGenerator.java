@@ -19,15 +19,19 @@ public class LicenseGenerator {
     private static final String PRIVATE_KEY_END_KEY = "-----END PRIVATE KEY-----";
     private static final String PRIVATE_KEY_START_KEY = "-----BEGIN PRIVATE KEY-----";
 
-    private final String additionalLicenseInformation = "Any information that should go into the encrypted license part.";
+    private static final String KEY_ALGORITHM = "RSA";
+    private static final String SIGNATURE_ALGORITHM = "SHA256withRSA";
+
+    private final String additionalLicenseInformation = "Any information that should go into the signed license part.";
 
     private final KeyFactory keyFactory;
 
     public LicenseGenerator() throws CannotGenerateLicenseException {
         try {
-            this.keyFactory = KeyFactory.getInstance("RSA");
+            this.keyFactory = KeyFactory.getInstance(KEY_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
-            throw new CannotGenerateLicenseException("RSA not found!", e);
+            final String message = String.format("Key algorithm %s not found!", KEY_ALGORITHM);
+            throw new CannotGenerateLicenseException(message, e);
         }
     }
 
@@ -43,7 +47,7 @@ public class LicenseGenerator {
             final byte[] plainPrivateKey = Base64.getDecoder().decode(privateKey);
             final PKCS8EncodedKeySpec pcks8Spec = new PKCS8EncodedKeySpec(plainPrivateKey);
 
-            final Signature privateSignature = Signature.getInstance("SHA256withRSA");
+            final Signature privateSignature = Signature.getInstance(SIGNATURE_ALGORITHM);
             privateSignature.initSign(keyFactory.generatePrivate(pcks8Spec));
             privateSignature.update(input.getBytes(StandardCharsets.UTF_8));
 
@@ -56,7 +60,6 @@ public class LicenseGenerator {
     }
 
     private String stripKey(final String privateKey) {
-        // Remove markers and new line characters in private key
         return privateKey
                 .replaceAll("\n", "")
                 .replaceAll(PRIVATE_KEY_START_KEY, "")
@@ -65,7 +68,7 @@ public class LicenseGenerator {
     }
 
     private String getPrivateKeyContent() throws CannotGenerateLicenseException {
-        try (InputStream resourceAsStream = LicenseGenerator.class.getResourceAsStream("/privateKey_pcks8.pem")){
+        try (InputStream resourceAsStream = LicenseGenerator.class.getResourceAsStream("/privateKey_pcks8.pem")) {
             return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new CannotGenerateLicenseException("Private key in PCKS8 format not found!", e);
