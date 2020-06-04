@@ -3,7 +3,7 @@ package org.r4fter.licensing;
 import org.r4fter.licensing.generation.CannotGenerateLicenseException;
 import org.r4fter.licensing.generation.LicenseGenerator;
 
-public class LicenseApplication {
+public class LicenseGenerationApplication {
 
     public static void main(final String[] args) {
         final String userName = "user@email.com";
