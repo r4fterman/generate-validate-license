@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-PRIVATE_KEY_FOLDER=./generate-license/src/main/resources
+PRIVATE_KEY_FOLDER=.
 PRIVATE_KEY_FILE=${PRIVATE_KEY_FOLDER}/privateKey.pem
 PCKS8_FILE=${PRIVATE_KEY_FOLDER}/privateKey_pcks8.pem
 
-PUBLIC_KEY_FOLDER=./validate-license/src/main/resources
+PUBLIC_KEY_FOLDER=.
 PUBLIC_KEY_FILE=${PUBLIC_KEY_FOLDER}/public.pem
 
 # create private key
