@@ -1,0 +1,26 @@
+env:
+  global:
+    - CC_TEST_REPORTER_ID=d1e870754c762b5a976b5d13fefb6877664ddf55b2467080037803134fdb72ae
+
+language: java
+
+jdk: openjdk14
+
+before_install:
+  - wget https://archive.apache.org/dist/maven/maven-3/3.5.4/binaries/apache-maven-3.5.4-bin.zip
+  - unzip -qq apache-maven-3.5.4-bin.zip
+  - export M2_HOME=$PWD/apache-maven-3.5.4
+  - export PATH=$M2_HOME/bin:$PATH
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
+
+install: /bin/true
+
+script:
+  - mvn clean install
+
+after_script:
+  - JACOCO_SOURCE_PATH=./core-commons/src/main/java ./cc-test-reporter format-coverage ./generate-license/target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.generate-license.json
+  - JACOCO_SOURCE_PATH=./core-parsers/src/main/java ./cc-test-reporter format-coverage ./validate-license/target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.validate-license.json
+  - ./cc-test-reporter sum-coverage ./target/coverage/codeclimate.*.json -p 5 -o ./target/coverage/codeclimate.json
+  - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i ./target/coverage/codeclimate.json; fi
