@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/r4fterman/generate-validate-license.svg?branch=master)](https://travis-ci.org/r4fterman/generate-validate-license)
-[![Known Vulnerabilities](https://snyk.io/test/github/r4fterman/generate-validate-license/badge.svg?targetFile=generate-license/pom.xml)](https://snyk.io/test/github/r4fterman/generate-validate-license?targetFile=generate-license/pom.xml)
+[![Known Vulnerabilities](https://snyk.io/test/github/r4fterman/generate-validate-license/badge.svg?targetFile=pom.xml)](https://snyk.io/test/github/r4fterman/generate-validate-license?targetFile=pom.xml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/10e5d8a936e65a3e38d3/maintainability)](https://codeclimate.com/github/r4fterman/generate-validate-license/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/10e5d8a936e65a3e38d3/test_coverage)](https://codeclimate.com/github/r4fterman/generate-validate-license/test_coverage)
 
