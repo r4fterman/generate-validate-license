@@ -1,5 +1,6 @@
 env:
   global:
+    - CODECOV_ID=017a4ebc-080c-4947-81e4-253f2294a5d0
     - CC_TEST_REPORTER_ID=d1e870754c762b5a976b5d13fefb6877664ddf55b2467080037803134fdb72ae
 
 language: java
@@ -22,3 +23,6 @@ script:
 after_script:
   - JACOCO_SOURCE_PATH=./src/main/java ./cc-test-reporter format-coverage ./target/coverage-reports/jacoco.xml -t jacoco -o ./target/coverage/codeclimate.json
   - if [[ "$TRAVIS_TEST_RESULT" == 0 ]]; then ./cc-test-reporter upload-coverage -i ./target/coverage/codeclimate.json; fi
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
